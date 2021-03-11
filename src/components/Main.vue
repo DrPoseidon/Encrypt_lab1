@@ -64,7 +64,6 @@
   </div>
 </template>
 <script>
-import alphabet from "../alphabet";
 export default {
   data() {
     return {
@@ -78,36 +77,43 @@ export default {
       a: "",
       c: "",
       m: "",
+      mid: 1103 - 1040,
+      min: 1040,
+      max: 1103,
     };
+  },
+  created() {
+    console.log(String.fromCharCode(0));
   },
   methods: {
     encrypt() {
-      let encryptedWord = this.encryptedWord.toLowerCase();
-      let encryptedCodeWord = this.encryptedCodeWord.toLowerCase();
+      let encryptedWord = this.encryptedWord;
+      let encryptedCodeWord = this.encryptedCodeWord;
       const indexes = [];
       for (let i = 0; i < encryptedCodeWord.length; i++) {
-        indexes.push(alphabet.indexOf(encryptedCodeWord[i]));
+        indexes.push(encryptedCodeWord[i].charCodeAt());
       }
-
       let k = 0;
       let encryptedResult = [];
       for (let i = 0; i < encryptedWord.length; i++) {
-        if (alphabet.indexOf(encryptedWord[i]) !== -1) {
+        if (
+          encryptedWord[i].charCodeAt() >= this.min &&
+          encryptedWord[i].charCodeAt() <= this.max
+        ) {
           if (
-            indexes[k] + alphabet.indexOf(encryptedWord[i]) - 1 <
-            alphabet.length - 1
+            encryptedWord[i].charCodeAt() + indexes[k] >= this.min &&
+            encryptedWord[i].charCodeAt() + indexes[k] <= this.max
           ) {
             encryptedResult.push(
-              alphabet[indexes[k] + alphabet.indexOf(encryptedWord[i])]
+              String.fromCharCode(encryptedWord[i].charCodeAt() + indexes[k])
             );
           } else {
-            encryptedResult.push(
-              alphabet[
-                indexes[k] +
-                  alphabet.indexOf(encryptedWord[i]) -
-                  alphabet.length
-              ]
-            );
+            let v = encryptedWord[i].charCodeAt() + indexes[k];
+            for (let j = 0; ; j++) {
+              v -= this.mid;
+              if (v >= this.min && v <= this.max) break;
+            }
+            encryptedResult.push(String.fromCharCode(v));
           }
           k < indexes.length - 1 ? k++ : (k = 0);
         } else {
@@ -120,30 +126,35 @@ export default {
       this.decryptedCodeWord = this.encryptedCodeWord;
     },
     decrypt() {
-      const decryptedWord = this.decryptedWord.toLowerCase();
-      const decryptedCodeWord = this.decryptedCodeWord.toLowerCase();
+      const decryptedWord = this.decryptedWord;
+      const decryptedCodeWord = this.decryptedCodeWord;
       const indexes = [];
       let k = 0;
       let decryptedResult = [];
       for (let i = 0; i < decryptedCodeWord.length; i++) {
-        indexes.push(alphabet.indexOf(decryptedCodeWord[i]));
+        indexes.push(decryptedCodeWord[i].charCodeAt());
       }
+
       for (let i = 0; i < decryptedWord.length; i++) {
-        if (alphabet.indexOf(decryptedWord[i]) !== -1) {
-          if (alphabet.indexOf(decryptedWord[i]) - indexes[k] >= 0) {
+        if (
+          decryptedWord[i].charCodeAt() >= this.min &&
+          decryptedWord[i].charCodeAt() <= this.max
+        ) {
+          if (
+            decryptedWord[i].charCodeAt() - indexes[k] >= this.min &&
+            decryptedWord[i].charCodeAt() - indexes[k] <= this.max
+          ) {
             decryptedResult.push(
-              alphabet[alphabet.indexOf(decryptedWord[i]) - indexes[k]]
+              String.fromCharCode(decryptedWord[i].charCodeAt() - indexes[k])
             );
           } else {
-            decryptedResult.push(
-              alphabet[
-                alphabet.length +
-                  alphabet.indexOf(decryptedWord[i]) -
-                  indexes[k]
-              ]
-            );
+            let v = decryptedWord[i].charCodeAt() - indexes[k];
+            for (let j = 0; ; j++) {
+              v += this.mid;
+              if (v >= this.min && v <= this.max) break;
+            }
+            decryptedResult.push(String.fromCharCode(v));
           }
-
           k < indexes.length - 1 ? k++ : (k = 0);
         } else {
           decryptedResult.push(decryptedWord[i]);
