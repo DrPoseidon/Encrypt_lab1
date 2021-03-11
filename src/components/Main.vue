@@ -3,7 +3,7 @@
     <div class="types">
       <div class="type">
         <label>Шифр Виженера (базовый)</label>
-        <input type="radio" v-model="type" value="vigener" name="type" />
+        <input type="radio" v-model="type" value="vigenere" name="type" />
       </div>
       <div class="type">
         <label>Шифр Виженера + гаммирование</label>
@@ -34,7 +34,7 @@
           type="text"
           v-model="encryptedCodeWord"
         />
-        <button v-if="type === 'vigener'" @click="encrypt()">
+        <button v-if="type === 'vigenere'" @click="encrypt()">
           Зашифровать
         </button>
         <button v-else @click="gammaEncrypt()">
@@ -52,7 +52,7 @@
           type="text"
           v-model="decryptedCodeWord"
         />
-        <button v-if="type === 'vigener'" @click="decrypt()">
+        <button v-if="type === 'vigenere'" @click="decrypt()">
           Расшифровать
         </button>
         <button v-else @click="gammaDecrypt()">
@@ -73,7 +73,7 @@ export default {
       decryptedCodeWord: "",
       encryptedResult: "",
       decryptedResult: "",
-      type: "vigener",
+      type: "vigenere",
       a: "",
       c: "",
       m: "",
@@ -174,9 +174,31 @@ export default {
       }
       let encryptedResult = [];
       for (let i = 0; i < encryptedWord.length; i++) {
-        encryptedResult.push(
-          String.fromCharCode(encryptedWord[i].charCodeAt() + x[i])
-        );
+        if (
+          encryptedWord[i].charCodeAt() >= this.min &&
+          encryptedWord[i].charCodeAt() <= this.max
+        ) {
+          if (
+            encryptedWord[i].charCodeAt() + x[i] >= this.min &&
+            encryptedWord[i].charCodeAt() + x[i] <= this.max
+          ) {
+            encryptedResult.push(
+              String.fromCharCode(encryptedWord[i].charCodeAt() + x[i])
+            );
+          } else {
+            let v = encryptedWord[i].charCodeAt() + x[i];
+            for (let j = 0; ; j++) {
+              v -= this.mid;
+              if (v >= this.min && v <= this.max) break;
+            }
+            encryptedResult.push(String.fromCharCode(v));
+          }
+        } else {
+          encryptedResult.push(encryptedWord[i]);
+        }
+        // encryptedResult.push(
+        //   String.fromCharCode(encryptedWord[i].charCodeAt() + x[i])
+        // );
       }
       this.encryptedResult = encryptedResult.join("");
       this.decryptedWord = this.encryptedResult;
@@ -192,9 +214,31 @@ export default {
       }
       let decryptedResult = [];
       for (let i = 0; i < decryptedWord.length; i++) {
-        decryptedResult.push(
-          String.fromCharCode(decryptedWord[i].charCodeAt() - x[i])
-        );
+        if (
+          decryptedWord[i].charCodeAt() >= this.min &&
+          decryptedWord[i].charCodeAt() <= this.max
+        ) {
+          if (
+            decryptedWord[i].charCodeAt() - x[i] >= this.min &&
+            decryptedWord[i].charCodeAt() - x[i] <= this.max
+          ) {
+            decryptedResult.push(
+              String.fromCharCode(decryptedWord[i].charCodeAt() - x[i])
+            );
+          } else {
+            let v = decryptedWord[i].charCodeAt() - x[i];
+            for (let j = 0; ; j++) {
+              v += this.mid;
+              if (v >= this.min && v <= this.max) break;
+            }
+            decryptedResult.push(String.fromCharCode(v));
+          }
+        } else {
+          decryptedResult.push(decryptedWord[i]);
+        }
+        // decryptedResult.push(
+        //   String.fromCharCode(decryptedWord[i].charCodeAt() - x[i])
+        // );
       }
       this.decryptedResult = decryptedResult.join("");
     },
