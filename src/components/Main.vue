@@ -1,20 +1,65 @@
 <template>
   <div class="main">
-    <div class="item">
-      <label>Введите то, что нужно зашифровать</label>
-      <input type="text" v-model="encryptedWord" />
-      <label>Введите ключ слово</label>
-      <input type="text" v-model="encryptedCodeWord" />
-      <button @click="encrypt()">Зашифровать</button>
-      <p v-show="encryptedResult">Результат: {{ encryptedResult }}</p>
+    <div class="types">
+      <div class="type">
+        <label>Шифр Виженера (базовый)</label>
+        <input type="radio" v-model="type" value="vigener" name="type" />
+      </div>
+      <div class="type">
+        <label>Шифр Виженера + гаммирование</label>
+        <input type="radio" v-model="type" value="gamma" name="type" />
+      </div>
     </div>
-    <div class="item">
-      <label>Введите то, что нужно расшифровать</label>
-      <input type="text" v-model="decryptedWord" />
-      <label>Введите ключ слово</label>
-      <input type="text" v-model="decryptedCodeWord" />
-      <button @click="decrypt()">Расшифровать</button>
-      <p v-show="decryptedResult">Результат: {{ decryptedResult }}</p>
+    <div class="acm">
+      <div class="inputs">
+        <label v-show="type === 'gamma'">a</label>
+        <input v-show="type === 'gamma'" type="text" v-model="a" class="inp" />
+      </div>
+      <div class="inputs">
+        <label v-show="type === 'gamma'">c</label>
+        <input v-show="type === 'gamma'" type="text" v-model="c" class="inp" />
+      </div>
+      <div class="inputs">
+        <label v-show="type === 'gamma'">m</label>
+        <input v-show="type === 'gamma'" type="text" v-model="m" class="inp" />
+      </div>
+    </div>
+    <div class="items">
+      <div class="item">
+        <label>Введите то, что нужно зашифровать</label>
+        <input type="text" v-model="encryptedWord" />
+        <label v-show="type !== 'gamma'">Введите ключ слово</label>
+        <input
+          v-show="type !== 'gamma'"
+          type="text"
+          v-model="encryptedCodeWord"
+        />
+        <button v-if="type === 'vigener'" @click="encrypt()">
+          Зашифровать
+        </button>
+        <button v-else @click="gammaEncrypt()">
+          Зашифровать
+        </button>
+        <p v-show="encryptedResult">Результат: {{ encryptedResult }}</p>
+      </div>
+
+      <div class="item">
+        <label>Введите то, что нужно расшифровать</label>
+        <input type="text" v-model="decryptedWord" />
+        <label v-show="type !== 'gamma'">Введите ключ слово</label>
+        <input
+          v-show="type !== 'gamma'"
+          type="text"
+          v-model="decryptedCodeWord"
+        />
+        <button v-if="type === 'vigener'" @click="decrypt()">
+          Расшифровать
+        </button>
+        <button v-else @click="gammaDecrypt()">
+          Расшифровать
+        </button>
+        <p v-show="decryptedResult">Результат: {{ decryptedResult }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -29,6 +74,10 @@ export default {
       decryptedCodeWord: "",
       encryptedResult: "",
       decryptedResult: "",
+      type: "vigener",
+      a: "",
+      c: "",
+      m: "",
     };
   },
   methods: {
@@ -102,22 +151,85 @@ export default {
       }
       this.decryptedResult = decryptedResult.join("");
     },
+    gammaEncrypt() {
+      const a = Number(this.a);
+      const c = Number(this.c);
+      const m = Number(this.m);
+      const encryptedWord = this.encryptedWord;
+      const x = [a];
+
+      for (let i = 0; i < encryptedWord.length - 1; i++) {
+        x.push((a * x[i] + c) % m);
+      }
+      let encryptedResult = [];
+      for (let i = 0; i < encryptedWord.length; i++) {
+        encryptedResult.push(
+          String.fromCharCode(encryptedWord[i].charCodeAt() + x[i])
+        );
+      }
+      this.encryptedResult = encryptedResult.join("");
+      this.decryptedWord = this.encryptedResult;
+    },
+    gammaDecrypt() {
+      const a = Number(this.a);
+      const c = Number(this.c);
+      const m = Number(this.m);
+      const x = [a];
+      const decryptedWord = this.decryptedWord;
+      for (let i = 0; i < decryptedWord.length - 1; i++) {
+        x.push((a * x[i] + c) % m);
+      }
+      let decryptedResult = [];
+      for (let i = 0; i < decryptedWord.length; i++) {
+        decryptedResult.push(
+          String.fromCharCode(decryptedWord[i].charCodeAt() - x[i])
+        );
+      }
+      this.decryptedResult = decryptedResult.join("");
+    },
   },
 };
 </script>
 <style>
+.acm {
+  display: flex;
+  flex-direction: column;
+}
 .main {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   margin: 100px 25%;
   font-size: 20px;
+  align-items: center;
+}
+.types {
+  margin-bottom: 20px;
+}
+.type {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 400px;
+}
+.items {
+  display: flex;
+  flex-direction: row;
 }
 .item {
   display: flex;
   flex-direction: column;
   width: 400px;
+  margin: 0 20px;
+}
+.inputs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.inp {
+  width: 20px;
+  margin-left: 20px;
+  margin-bottom: 10px;
 }
 input {
   font-size: 20px;
